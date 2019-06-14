@@ -53,6 +53,7 @@ public class RouteInfoManager {
      * broker名 与 broker数据 Map
      * 一个broker名下可以有多个broker，即broker可以同名
      * TODO 疑问：需要研究下
+     * peng 一个key代表一个master ,value为这个master所属的slave,master和slave都是Brocker服务
      */
     private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
     /**

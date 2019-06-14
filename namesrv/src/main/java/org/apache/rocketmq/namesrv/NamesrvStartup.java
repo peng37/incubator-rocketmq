@@ -50,7 +50,7 @@ public class NamesrvStartup {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
         if (null == System.getProperty(NettySystemConfig.COM_ROCKETMQ_REMOTING_SOCKET_SNDBUF_SIZE)) {
-            NettySystemConfig.socketSndbufSize = 4096;
+            NettySystemConfig.socketSndbufSize = 4096; // 网络 socket 发送缓存区大小， 默认 64k。
 
         }
 
@@ -123,7 +123,10 @@ public class NamesrvStartup {
                 controller.shutdown();
                 System.exit(-3);
             }
-
+            // peng 注册 JVM 钩子函数并启动服务器， 以便监昕 Broker 、消息生产者 的网络请求
+            //如果代码中使用了线程池，一种优雅停
+            //机的方式就是注册一个 JVM 钩子函数， 在 JVM 进程关闭之前，先将线程池关闭 ，及时释
+            //放资源 。
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;
                 private AtomicInteger shutdownTimes = new AtomicInteger(0);
@@ -142,7 +145,7 @@ public class NamesrvStartup {
                     }
                 }
             }, "ShutdownHook"));
-
+            // peng 启动netty连接
             controller.start();
 
             String tip = "The Name Server boot success. serializeType=" + RemotingCommand.getSerializeTypeConfigInThisServer();
