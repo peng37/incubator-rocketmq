@@ -167,9 +167,11 @@ public class RouteInfoManager {
 
                 // 更新topic信息
                 if (null != topicConfigWrapper //
-                    && MixAll.MASTER_ID == brokerId) {
+                    && MixAll.MASTER_ID == brokerId) { // 这个逻辑只处理broker-master
                     if (this.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion())//
                         || registerFirst) {
+                        // broker-master的 ID记录没有或是首次注册执行
+                        //为这个master创建读写队列环境
                         ConcurrentHashMap<String, TopicConfig> tcTable =
                             topicConfigWrapper.getTopicConfigTable();
                         if (tcTable != null) {
