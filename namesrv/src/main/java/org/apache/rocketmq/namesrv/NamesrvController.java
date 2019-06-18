@@ -78,7 +78,7 @@ public class NamesrvController {
 
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-
+        // todo 比较重要，注册处理器，所有请求处理主流程
         this.registerProcessor();
         //peng  定时任务 I: NameServer 每隔 I Os 扫描一次 Broker ， 移除处于不激活状态的 Broker
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
