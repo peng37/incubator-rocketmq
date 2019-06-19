@@ -33,12 +33,15 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Create MappedFile in advance
+ * peng MappedFile统一创建管理
  */
 public class AllocateMappedFileService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private static int waitTimeOut = 1000 * 5;
+    //存储创建的fileMap，用于下次进行创建直接获取
     private ConcurrentHashMap<String, AllocateRequest> requestTable =
         new ConcurrentHashMap<String, AllocateRequest>();
+    //负责MappedFile创建
     private PriorityBlockingQueue<AllocateRequest> requestQueue =
         new PriorityBlockingQueue<AllocateRequest>();
     private volatile boolean hasException = false;
@@ -48,7 +51,7 @@ public class AllocateMappedFileService extends ServiceThread {
         this.messageStore = messageStore;
     }
 
-    // TODO 疑问：待读
+    // peng 创建映射文件MappedFile的入口
     public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
         int canSubmitRequests = 2;
         if (this.messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
@@ -59,15 +62,17 @@ public class AllocateMappedFileService extends ServiceThread {
         }
 
         AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
+        //peng 将需要创建的mapfile文件路径存放到requestTable中，创建线程循环过程就会发现进行文件创建
         boolean nextPutOK = this.requestTable.putIfAbsent(nextFilePath, nextReq) == null;
 
-        if (nextPutOK) {
+        if (nextPutOK) { //nextPutOK == null 第一次穿创建
             if (canSubmitRequests <= 0) {
                 log.warn("[NOTIFYME]TransientStorePool is not enough, so create mapped file error, " +
                     "RequestQueueSize : {}, StorePoolSize: {}", this.requestQueue.size(), this.messageStore.getTransientStorePool().remainBufferNumbs());
                 this.requestTable.remove(nextFilePath);
                 return null;
             }
+            //需要将要创建的AllocateRequest加入到队列中
             boolean offerOK = this.requestQueue.offer(nextReq);
             if (!offerOK) {
                 log.warn("never expected here, add a request to preallocate queue failed");
@@ -98,6 +103,7 @@ public class AllocateMappedFileService extends ServiceThread {
         AllocateRequest result = this.requestTable.get(nextFilePath);
         try {
             if (result != null) {
+                //等待分配mmap空间
                 boolean waitOK = result.getCountDownLatch().await(waitTimeOut, TimeUnit.MILLISECONDS);
                 if (!waitOK) {
                     log.warn("create mmap timeout " + result.getFilePath() + " " + result.getFileSize());

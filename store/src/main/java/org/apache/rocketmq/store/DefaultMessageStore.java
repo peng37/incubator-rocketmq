@@ -100,8 +100,8 @@ public class DefaultMessageStore implements MessageStore {
 
     private final ScheduledExecutorService scheduledExecutorService =
         Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("StoreScheduledThread"));
-    private final BrokerStatsManager brokerStatsManager;
-    private final MessageArrivingListener messageArrivingListener;
+    private final BrokerStatsManager brokerStatsManager; //集群状态处理
+    private final MessageArrivingListener messageArrivingListener;//新消息到达监听器接口
     private final BrokerConfig brokerConfig;
 
     private volatile boolean shutdown = true;
@@ -112,9 +112,12 @@ public class DefaultMessageStore implements MessageStore {
 
     public DefaultMessageStore(final MessageStoreConfig messageStoreConfig, final BrokerStatsManager brokerStatsManager,
         final MessageArrivingListener messageArrivingListener, final BrokerConfig brokerConfig) throws IOException {
+
         this.messageArrivingListener = messageArrivingListener;
+        // Broker 和Store配置
         this.brokerConfig = brokerConfig;
         this.messageStoreConfig = messageStoreConfig;
+
         this.brokerStatsManager = brokerStatsManager;
         this.allocateMappedFileService = new AllocateMappedFileService(this);
         this.commitLog = new CommitLog(this);
@@ -137,7 +140,7 @@ public class DefaultMessageStore implements MessageStore {
             this.transientStorePool.init();
         }
 
-        this.allocateMappedFileService.start();
+        this.allocateMappedFileService.start(); //peng 启动mapfile创建线程
 
         this.indexService.start();
     }
@@ -322,13 +325,14 @@ public class DefaultMessageStore implements MessageStore {
         }
 
         long beginTime = this.getSystemClock().now();
-        // 添加消息到commitLog
+        // peng 添加消息到commitLog
         PutMessageResult result = this.commitLog.putMessage(msg);
 
         long eclipseTime = this.getSystemClock().now() - beginTime;
         if (eclipseTime > 500) {
             log.warn("putMessage not in lock eclipse time(ms)={}, bodyLength={}", eclipseTime, msg.getBody().length);
         }
+        //存储消息花费时间
         this.storeStatsService.setPutMessageEntireTimeMax(eclipseTime);
 
         if (null == result || !result.isOk()) {

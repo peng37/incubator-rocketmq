@@ -28,6 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.nio.ch.DirectBuffer;
 
+/**
+ * 短暂的存储池
+ * 提供一种内存锁定，将当前堆外内存一直锁定在内存中，避免被进程将内存交换到磁盘 。
+ */
 public class TransientStorePool {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 

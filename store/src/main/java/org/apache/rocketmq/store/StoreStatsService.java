@@ -28,6 +28,9 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * s数据存储服务类
+ */
 public class StoreStatsService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
@@ -39,7 +42,7 @@ public class StoreStatsService extends ServiceThread {
     };
 
     private static int printTPSInterval = 60 * 1;
-
+    //消息存蓄失败次数
     private final AtomicLong putMessageFailedTimes = new AtomicLong(0);
 
     private final Map<String, AtomicLong> putMessageTopicTimesTotal =
@@ -55,9 +58,10 @@ public class StoreStatsService extends ServiceThread {
     private final LinkedList<CallSnapshot> getTimesFoundList = new LinkedList<CallSnapshot>();
     private final LinkedList<CallSnapshot> getTimesMissList = new LinkedList<CallSnapshot>();
     private final LinkedList<CallSnapshot> transferedMsgCountList = new LinkedList<CallSnapshot>();
+    //记录了每个固定的时间段存储消息次数，应该是用来集中计算消息存蓄耗时评估
     private volatile AtomicLong[] putMessageDistributeTime;
     private long messageStoreBootTimestamp = System.currentTimeMillis();
-    private volatile long putMessageEntireTimeMax = 0;
+    private volatile long putMessageEntireTimeMax = 0; //存蓄历史耗时最多时间的一次存储时间
     private volatile long getMessageEntireTimeMax = 0;
     // for putMessageEntireTimeMax
     private ReentrantLock lockPut = new ReentrantLock();

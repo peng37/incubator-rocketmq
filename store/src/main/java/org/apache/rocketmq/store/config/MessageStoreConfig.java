@@ -612,7 +612,7 @@ public class MessageStoreConfig {
 
     /**
      * Enable transient commitLog store poll only if transientStorePoolEnable is true and the FlushDiskType is ASYNC_FLUSH
-     *
+     *peng启用临时提交日志存储轮询，只有在瞬态存储池可启用为真且刷新磁盘类型为异步刷新的情况下才能启用临时提交日志存储轮询
      * @return <tt>true</tt> or <tt>false</tt>
      */
     public boolean isTransientStorePoolEnable() {

@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Store all metadata downtime for recovery, data protection reliability
+ * 存储所有源数据
  */
 public class CommitLog {
 
@@ -604,6 +605,7 @@ public class CommitLog {
 
         // 定时消息处理
         final int tranType = MessageSysFlag.getTransactionValue(msg.getSysFlag());
+        //消息的事务类型是提交和非事务处理逻辑：非事务消息才能进行延迟处理
         if (tranType == MessageSysFlag.TRANSACTION_NOT_TYPE//
             || tranType == MessageSysFlag.TRANSACTION_COMMIT_TYPE) {
             // Delay Delivery
@@ -618,13 +620,13 @@ public class CommitLog {
                 // 延迟级别 与 消息队列编号 做固定映射
                 queueId = ScheduleMessageService.delayLevel2QueueId(msg.getDelayTimeLevel());
 
-                // Backup real topic, queueId
+                // Backup real topic, queueId 将真实的topic和队列编号备份到配置中
                 MessageAccessor.putProperty(msg, MessageConst.PROPERTY_REAL_TOPIC, msg.getTopic());
                 MessageAccessor.putProperty(msg, MessageConst.PROPERTY_REAL_QUEUE_ID, String.valueOf(msg.getQueueId()));
                 msg.setPropertiesString(MessageDecoder.messageProperties2String(msg.getProperties()));
 
-                msg.setTopic(topic);
-                msg.setQueueId(queueId);
+                msg.setTopic(topic); //修改topic为固定SCHEDULE_TOPIC_XXXX
+                msg.setQueueId(queueId); //消息队列编号，根据延迟等级计算得出 DelayTimeLevel-1
             }
         }
 
@@ -654,7 +656,7 @@ public class CommitLog {
                 return new PutMessageResult(PutMessageStatus.CREATE_MAPEDFILE_FAILED, null);
             }
 
-            // 存储消息
+            //peng 存储消息
             result = mappedFile.appendMessage(msg, this.appendMessageCallback);
             switch (result.getStatus()) {
                 case PUT_OK:
@@ -1265,6 +1267,7 @@ public class CommitLog {
             return msgStoreItemMemory;
         }
 
+        //peng 写入文件数据到buffer
         public AppendMessageResult doAppend(final long fileFromOffset, final ByteBuffer byteBuffer, final int maxBlank, final MessageExtBrokerInner msgInner) {
             // STORETIMESTAMP + STOREHOSTADDRESS + OFFSET <br>
 

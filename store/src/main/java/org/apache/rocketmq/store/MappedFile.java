@@ -79,6 +79,7 @@ public class MappedFile extends ReferenceResource {
     /**
      * fileChannel
      * {@link #file}的channel = new RandomAccessFile(this.file, "rw").getChannel()
+     * peng 操作文件数据的通道，只有在程序停止才会关闭；
      */
     protected FileChannel fileChannel;
     /**
