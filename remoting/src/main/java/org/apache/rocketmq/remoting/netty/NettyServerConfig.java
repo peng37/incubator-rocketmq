@@ -24,8 +24,10 @@ public class NettyServerConfig implements Cloneable {
     private int serverWorkerThreads = 8;
     private int serverCallbackExecutorThreads = 0;
     private int serverSelectorThreads = 3;
+    //单向请求、异步请求的最大并发量，超过默认数值，会阻塞
     private int serverOnewaySemaphoreValue = 256;
     private int serverAsyncSemaphoreValue = 64;
+    // 监听客户端心跳的最大空闲时间，单位
     private int serverChannelMaxIdleTimeSeconds = 120;
 
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;

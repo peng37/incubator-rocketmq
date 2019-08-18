@@ -30,6 +30,10 @@ import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * 埋点数据管控
+ * KVConfigManager是一个包含命名空间的KV配置存储管理组件，他在RocketMQ中起到什么样的作用
+ */
 public class KVConfigManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
@@ -44,7 +48,10 @@ public class KVConfigManager {
     }
 
     public void load() {
+        //user.home/namesrv/kvConfig.json
+        //加载本地的 kvConfig.json
         String content = MixAll.file2String(this.namesrvController.getNamesrvConfig().getKvConfigPath());
+        // todo content是存的是啥呢？？？
         if (content != null) {
             KVConfigSerializeWrapper kvConfigSerializeWrapper =
                 KVConfigSerializeWrapper.fromJson(content, KVConfigSerializeWrapper.class);

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.apache.rocketmq.client.consumer.DefaultMQPushConsumer</OriginalElement>
+  <nodes>
+    <node x="233.37499999999997" y="170.0">org.apache.rocketmq.client.ClientConfig</node>
+    <node x="51.87499999999997" y="255.0">org.apache.rocketmq.client.consumer.DefaultMQPushConsumer</node>
+    <node x="238.87499999999997" y="0.0">org.apache.rocketmq.client.MQAdmin</node>
+    <node x="421.75" y="170.0">org.apache.rocketmq.client.consumer.MQPullConsumer</node>
+    <node x="319.875" y="255.0">org.apache.rocketmq.client.consumer.DefaultMQPullConsumer</node>
+    <node x="225.87499999999997" y="85.0">org.apache.rocketmq.client.consumer.MQConsumer</node>
+    <node x="0.0" y="170.0">org.apache.rocketmq.client.consumer.MQPushConsumer</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.apache.rocketmq.client.consumer.DefaultMQPushConsumer" target="org.apache.rocketmq.client.ClientConfig">
+      <point x="62.0" y="-17.5" />
+      <point x="237.87499999999997" y="230.0" />
+      <point x="271.125" y="230.0" />
+      <point x="-37.75" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.DefaultMQPullConsumer" target="org.apache.rocketmq.client.ClientConfig">
+      <point x="-60.0" y="-17.5" />
+      <point x="379.875" y="230.0" />
+      <point x="346.625" y="230.0" />
+      <point x="37.75" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.MQPullConsumer" target="org.apache.rocketmq.client.consumer.MQConsumer">
+      <point x="0.0" y="-17.5" />
+      <point x="515.75" y="145.0" />
+      <point x="347.375" y="145.0" />
+      <point x="40.5" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.MQPushConsumer" target="org.apache.rocketmq.client.consumer.MQConsumer">
+      <point x="0.0" y="-17.5" />
+      <point x="98.0" y="145.0" />
+      <point x="266.375" y="145.0" />
+      <point x="-40.5" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.MQConsumer" target="org.apache.rocketmq.client.MQAdmin">
+      <point x="0.0" y="-17.5" />
+      <point x="0.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.DefaultMQPushConsumer" target="org.apache.rocketmq.client.consumer.MQPushConsumer">
+      <point x="-62.0" y="-17.5" />
+      <point x="113.87499999999997" y="230.0" />
+      <point x="98.0" y="230.0" />
+      <point x="0.0" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.client.consumer.DefaultMQPullConsumer" target="org.apache.rocketmq.client.consumer.MQPullConsumer">
+      <point x="60.0" y="-17.5" />
+      <point x="499.875" y="230.0" />
+      <point x="515.75" y="230.0" />
+      <point x="0.0" y="17.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="183.5" y="145.0" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -72,6 +72,30 @@ public class BrokerStartup {
         return null;
     }
 
+    /**
+     * 创建一个BrokerController
+     * @param args
+     * @return
+     * （1）读取命令行配置，读取配置文件配置封装BrokerConfig，NettyServerConfig，NettyClientConfig，MessageStoreConfig
+     * （2）检测namesrvAddr的有效性
+     * （3）设置broker的日志打印
+     * （4）创建BrokerController，设置配置property
+     * （5）对BrokerController进行初始化initialize
+     *      a. 从硬盘加载持久化的配置文件topicConfig，消费进度集合consumerOffset，订阅组信息subscriptionGroup
+     *      b. todo messageStore加载
+     *      c. todo 创建remotingServer，fastRemotingServer,创建两个干嘛呢
+     *      d. 创建线程池sendMessageExecutor，pullMessageExecutor，adminBrokerExecutor，clientManageExecutor，consumerManageExecutor
+     *      e. peng注册各种执行器驱动,用于请求路由分发：【其实就是发起调用或处理请求的具体执行类】
+     *      f. 启动各种定时任务：
+     *          1）message每天的存取次数：一天一次
+     *          2）持久化消费进度：默认5S
+     *          3）消费读取进度慢是否保护broker检查允许继续进行消费，默认不开启保护：3分钟
+     *          4）日志打印....:1分钟
+     *          5）更细 namesrvAddr：配置文件更新或从外部链接地址更新
+     *          6）peng如果Broker是Slave启动定时任务主从数据同步 ：1分钟
+     * （6）设置Hook线程
+     *
+     */
     public static BrokerController createBrokerController(String[] args) {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
@@ -97,7 +121,7 @@ public class BrokerStartup {
             final NettyClientConfig nettyClientConfig = new NettyClientConfig();
             nettyServerConfig.setListenPort(10911);
             final MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
-
+            //todo 这部分BrokerRole怎么会是其他的呢？？
             if (BrokerRole.SLAVE == messageStoreConfig.getBrokerRole()) {
                 int ratio = messageStoreConfig.getAccessMessageInMemoryMaxRatio() - 10;
                 messageStoreConfig.setAccessMessageInMemoryMaxRatio(ratio);
@@ -116,7 +140,7 @@ public class BrokerStartup {
                 MixAll.printObjectProperties(null, messageStoreConfig, true);
                 System.exit(0);
             }
-
+            //读取配置文件并解析配置到响应的配置对象中
             if (commandLine.hasOption('c')) {
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {
@@ -149,6 +173,7 @@ public class BrokerStartup {
                 try {
                     String[] addrArray = namesrvAddr.split(";");
                     for (String addr : addrArray) {
+                        //todo 只是做了转换吗？？？？ 其实这个是检测配置的namesrvAddr是否有效的吧
                         RemotingUtil.string2SocketAddress(addr);
                     }
                 } catch (Exception e) {
@@ -161,10 +186,10 @@ public class BrokerStartup {
 
             switch (messageStoreConfig.getBrokerRole()) {
                 case ASYNC_MASTER:
-                case SYNC_MASTER:
+                case SYNC_MASTER: //同步master处理，设置BrokerId=0
                     brokerConfig.setBrokerId(MixAll.MASTER_ID);
                     break;
-                case SLAVE:
+                case SLAVE://slave 的BrokerId不能小于等于0.要大于0
                     if (brokerConfig.getBrokerId() <= 0) {
                         System.out.printf("Slave's brokerId must be > 0");
                         System.exit(-3);

@@ -38,11 +38,11 @@ import java.util.concurrent.TimeUnit;
 
 public class NamesrvController {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
-
+    //配置类
     private final NamesrvConfig namesrvConfig;
-
     private final NettyServerConfig nettyServerConfig;
 
+    //定时任务
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
         "NSScheduledThread"));
 
@@ -50,7 +50,7 @@ public class NamesrvController {
     private final RouteInfoManager routeInfoManager;
 
     private RemotingServer remotingServer;
-
+    //接收broker请求处理
     private BrokerHousekeepingService brokerHousekeepingService;
 
     private ExecutorService remotingExecutor;
@@ -63,34 +63,29 @@ public class NamesrvController {
         this.kvConfigManager = new KVConfigManager(this);
         this.routeInfoManager = new RouteInfoManager();
         this.brokerHousekeepingService = new BrokerHousekeepingService(this);
-        this.configuration = new Configuration(
-            log,
-            this.namesrvConfig, this.nettyServerConfig
-        );
+        this.configuration = new Configuration(log, this.namesrvConfig, this.nettyServerConfig);
         this.configuration.setStorePathFromConfig(this.namesrvConfig, "configStorePath");
     }
 
     public boolean initialize() {
-
+        //（1）从本地加载kvConfig到Manager中
         this.kvConfigManager.load();
-
+        //（2）启动netty服务
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
-
+        //（3）服务调用执行线程池
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
-        // todo 比较重要，注册处理器，所有请求处理主流程
+        // peng 比较重要，注册处理器，所有请求处理主流程
         this.registerProcessor();
-        //peng  定时任务 I: NameServer 每隔 I Os 扫描一次 Broker ， 移除处于不激活状态的 Broker
+        //peng  定时任务 NameServer 每隔 10s 扫描一次 Broker ， 移除处于不激活状态的 Broker
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-
             @Override
             public void run() {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
-        //peng namesSrver 每隔 10 分钟打印一次 KV 配置 。
+        //peng 定时任务  namesSrver 每隔 10 分钟打印一次 KV 配置 。
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-
             @Override
             public void run() {
                 NamesrvController.this.kvConfigManager.printAllPeriodically();

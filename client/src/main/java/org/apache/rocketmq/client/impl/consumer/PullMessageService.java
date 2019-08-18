@@ -115,6 +115,7 @@ public class PullMessageService extends ServiceThread {
 
         while (!this.isStopped()) {
             try {
+                // 从拉取的消息队列中获取拉取请求
                 PullRequest pullRequest = this.pullRequestQueue.take();
                 if (pullRequest != null) {
                     this.pullMessage(pullRequest);

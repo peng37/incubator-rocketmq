@@ -52,13 +52,21 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         this.namesrvController = namesrvController;
     }
 
+
+    /**
+     * namesrv功能核心处理类：方namesrv服务有请求的时候会走到这个方法【netty实现】
+     * @param ctx mq定义的请求体内容
+     * @param request 请求处理的业务逻辑判定依据
+     * @return
+     * @throws RemotingCommandException
+     */
     @Override
-    public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
+    public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
+        throws RemotingCommandException {
         if (log.isDebugEnabled()) {
             log.debug("receive request, {} {} {}",
                 request.getCode(),
-                RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                request);
+                RemotingHelper.parseChannelRemoteAddr(ctx.channel()), request);
         }
 
         switch (request.getCode()) {
@@ -69,41 +77,54 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
                 return this.getKVConfig(ctx, request);
             case RequestCode.DELETE_KV_CONFIG:
                 return this.deleteKVConfig(ctx, request);
-
-            case RequestCode.REGISTER_BROKER: // 注册Broker
+            // 注册Broker
+            case RequestCode.REGISTER_BROKER:
                 Version brokerVersion = MQVersion.value2Version(request.getVersion());
                 if (brokerVersion.ordinal() >= MQVersion.Version.V3_0_11.ordinal()) {
                     return this.registerBrokerWithFilterServer(ctx, request);
                 } else {
                     return this.registerBroker(ctx, request);
                 }
-            case RequestCode.UNREGISTER_BROKER: // 移除注册Broker
+                // 移除注册Broker
+            case RequestCode.UNREGISTER_BROKER:
                 return this.unregisterBroker(ctx, request);
-            case RequestCode.GET_ROUTEINTO_BY_TOPIC: //获取topic的路由信息
+            //获取topic的路由信息
+            case RequestCode.GET_ROUTEINTO_BY_TOPIC:
                 return this.getRouteInfoByTopic(ctx, request);
+                //获取broker集群信息
             case RequestCode.GET_BROKER_CLUSTER_INFO:
                 return this.getBrokerClusterInfo(ctx, request);
-
+            //todo 擦除broker的写权限
             case RequestCode.WIPE_WRITE_PERM_OF_BROKER:
                 return this.wipeWritePermOfBroker(ctx, request);
+                //获取所有的topic集合
             case RequestCode.GET_ALL_TOPIC_LIST_FROM_NAMESERVER:
                 return getAllTopicListFromNameserver(ctx, request);
+                //删除在namesev 中的 topic
             case RequestCode.DELETE_TOPIC_IN_NAMESRV:
                 return deleteTopicInNamesrv(ctx, request);
+                //todo 获取kv集合通过namespace
             case RequestCode.GET_KVLIST_BY_NAMESPACE:
                 return this.getKVListByNamespace(ctx, request);
+                //获取指定集群下面的topic
             case RequestCode.GET_TOPICS_BY_CLUSTER:
                 return this.getTopicsByCluster(ctx, request);
+                //todo 获取系统中所有的topic包括不同集群中的topic
             case RequestCode.GET_SYSTEM_TOPIC_LIST_FROM_NS:
                 return this.getSystemTopicListFromNs(ctx, request);
+             //todo 疑问
             case RequestCode.GET_UNIT_TOPIC_LIST:
                 return this.getUnitTopicList(ctx, request);
+            //todo 疑问
             case RequestCode.GET_HAS_UNIT_SUB_TOPIC_LIST:
                 return this.getHasUnitSubTopicList(ctx, request);
+            //todo 疑问
             case RequestCode.GET_HAS_UNIT_SUB_UNUNIT_TOPIC_LIST:
                 return this.getHasUnitSubUnUnitTopicList(ctx, request);
+            //更新namesrv配置
             case RequestCode.UPDATE_NAMESRV_CONFIG:
                 return this.updateConfig(ctx, request);
+            //获取namesrv配置
             case RequestCode.GET_NAMESRV_CONFIG:
                 return this.getConfig(ctx, request);
             default:
@@ -201,6 +222,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
             requestHeader.getBrokerName(),
             requestHeader.getBrokerId(),
             requestHeader.getHaServerAddr(),
+            //Broker中 topic 的配置信息
             registerBrokerBody.getTopicConfigSerializeWrapper(),
             registerBrokerBody.getFilterServerList(),
             ctx.channel());

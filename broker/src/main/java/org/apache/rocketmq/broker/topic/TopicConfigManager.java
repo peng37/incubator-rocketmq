@@ -54,10 +54,14 @@ public class TopicConfigManager extends ConfigManager {
     public TopicConfigManager() {
     }
 
+    /**
+     * 创建很多的默认topic
+     * @param brokerController
+     */
     public TopicConfigManager(BrokerController brokerController) {
         this.brokerController = brokerController;
         {
-            // MixAll.SELF_TEST_TOPIC
+            // MixAll.SELF_TEST_TOPIC peng  封装系统测试 topic
             String topic = MixAll.SELF_TEST_TOPIC;
             TopicConfig topicConfig = new TopicConfig(topic);
             this.systemTopicList.add(topic);
@@ -67,7 +71,7 @@ public class TopicConfigManager extends ConfigManager {
         }
         {
             // MixAll.DEFAULT_TOPIC
-            // 当 producer 发送无Route路由信息 的消息时，使用MixAll.DEFAULT_TOPIC对应的路由进行发送
+            // peng 当 producer 发送无Route路由信息 的消息时，使用MixAll.DEFAULT_TOPIC对应的路由进行发送
             // 发送到broker后，因为broker开启了自动创建Topic开关，则会创建该Topic路由，后面就可以使用该新路由进行发送消息
             if (this.brokerController.getBrokerConfig().isAutoCreateTopicEnable()) {
                 String topic = MixAll.DEFAULT_TOPIC;
@@ -81,7 +85,7 @@ public class TopicConfigManager extends ConfigManager {
             }
         }
         {
-            // MixAll.BENCHMARK_TOPIC
+            // MixAll.BENCHMARK_TOPIC todo 干嘛的
             String topic = MixAll.BENCHMARK_TOPIC;
             TopicConfig topicConfig = new TopicConfig(topic);
             this.systemTopicList.add(topic);
@@ -90,7 +94,7 @@ public class TopicConfigManager extends ConfigManager {
             this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         }
         {
-
+            // peng 为每一个Broker的集群创建一个topic todo 作用
             String topic = this.brokerController.getBrokerConfig().getBrokerClusterName();
             TopicConfig topicConfig = new TopicConfig(topic);
             this.systemTopicList.add(topic);

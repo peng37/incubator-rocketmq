@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class NettyRemotingAbstract {
     private static final Logger PLOG = LoggerFactory.getLogger(RemotingHelper.ROCKETMQ_REMOTING);
-
+    // todo 这两个信号量是干嘛的呢
     protected final Semaphore semaphoreOneway;
 
     protected final Semaphore semaphoreAsync;
@@ -90,6 +90,11 @@ public abstract class NettyRemotingAbstract {
         }
     }
 
+    /**
+     * 程序请求的主要入口：请求执行器分发通过processorTable中配置的映射关系
+     * @param ctx
+     * @param cmd
+     */
     public void processRequestCommand(final ChannelHandlerContext ctx, final RemotingCommand cmd) {
         final Pair<NettyRequestProcessor, ExecutorService> matched = this.processorTable.get(cmd.getCode());
         final Pair<NettyRequestProcessor, ExecutorService> pair = null == matched ? this.defaultRequestProcessor : matched;
@@ -102,19 +107,22 @@ public abstract class NettyRemotingAbstract {
                     try {
                         RPCHook rpcHook = NettyRemotingAbstract.this.getRPCHook();
                         if (rpcHook != null) {
+                            //前置执行器
                             rpcHook.doBeforeRequest(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd);
                         }
-
+                        //peng 发起请求执行
                         final RemotingCommand response = pair.getObject1().processRequest(ctx, cmd);
                         if (rpcHook != null) {
+                            //后置执行器
                             rpcHook.doAfterResponse(RemotingHelper.parseChannelRemoteAddr(ctx.channel()), cmd, response);
                         }
-
+                        //非一次发送的，调用端在等着响应呢，所有需要给请求予响应
                         if (!cmd.isOnewayRPC()) {
                             if (response != null) {
                                 response.setOpaque(opaque);
                                 response.markResponseType();
                                 try {
+                                    //peng  回写响应数据 todo netty实现咋实现的呢？
                                     ctx.writeAndFlush(response);
                                 } catch (Throwable e) {
                                     PLOG.error("process request over, but response failed", e);

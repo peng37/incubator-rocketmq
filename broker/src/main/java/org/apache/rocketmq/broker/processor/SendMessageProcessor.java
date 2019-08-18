@@ -47,6 +47,12 @@ import org.apache.rocketmq.store.stats.BrokerStatsManager;
 import java.net.SocketAddress;
 import java.util.List;
 
+/**
+ *
+ * SEND_MESSAGE
+ * SEND_MESSAGE_V2：
+ * CONSUMER_SEND_MSG_BACK：消费者发送消息回调
+ */
 public class SendMessageProcessor extends AbstractSendMessageProcessor implements NettyRequestProcessor {
 
     private List<ConsumeMessageHook> consumeMessageHookList;

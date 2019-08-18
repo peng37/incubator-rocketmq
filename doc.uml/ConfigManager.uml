@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.apache.rocketmq.common.ConfigManager</OriginalElement>
+  <nodes>
+    <node x="0.0" y="85.0">org.apache.rocketmq.broker.topic.TopicConfigManager</node>
+    <node x="501.0" y="85.0">org.apache.rocketmq.broker.subscription.SubscriptionGroupManager</node>
+    <node x="235.0" y="85.0">org.apache.rocketmq.store.schedule.ScheduleMessageService</node>
+    <node x="408.5" y="0.0">org.apache.rocketmq.common.ConfigManager</node>
+    <node x="785.0" y="85.0">org.apache.rocketmq.broker.offset.ConsumerOffsetManager</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.apache.rocketmq.broker.subscription.SubscriptionGroupManager" target="org.apache.rocketmq.common.ConfigManager">
+      <point x="0.0" y="-17.5" />
+      <point x="633.0" y="65.0" />
+      <point x="517.25" y="65.0" />
+      <point x="21.75" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.broker.offset.ConsumerOffsetManager" target="org.apache.rocketmq.common.ConfigManager">
+      <point x="0.0" y="-17.5" />
+      <point x="907.0" y="55.0" />
+      <point x="560.75" y="55.0" />
+      <point x="65.25" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.broker.topic.TopicConfigManager" target="org.apache.rocketmq.common.ConfigManager">
+      <point x="0.0" y="-17.5" />
+      <point x="107.5" y="55.0" />
+      <point x="430.25" y="55.0" />
+      <point x="-65.25" y="17.5" />
+    </edge>
+    <edge source="org.apache.rocketmq.store.schedule.ScheduleMessageService" target="org.apache.rocketmq.common.ConfigManager">
+      <point x="0.0" y="-17.5" />
+      <point x="358.0" y="65.0" />
+      <point x="473.75" y="65.0" />
+      <point x="-21.75" y="17.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="87.0" y="17.5" />
+  <SelectedNodes />
+  <Categories />
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

@@ -659,24 +659,26 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
                     this.offsetStore = this.defaultMQPushConsumer.getOffsetStore();
                 } else {
                     switch (this.defaultMQPushConsumer.getMessageModel()) {
-                        case BROADCASTING:
+                        case BROADCASTING://广播模式，本地存储实现
                             this.offsetStore = new LocalFileOffsetStore(this.mQClientFactory, this.defaultMQPushConsumer.getConsumerGroup());
                             break;
-                        case CLUSTERING:
+                        case CLUSTERING: //集群模式，远程存储实现
                             this.offsetStore = new RemoteBrokerOffsetStore(this.mQClientFactory, this.defaultMQPushConsumer.getConsumerGroup());
                             break;
                         default:
                             break;
                     }
                 }
+                //集群模式不做任何操作
+                //广播模式：从本地硬盘读取消费进度
                 this.offsetStore.load();
 
                 // TODO 待读：监听器
                 if (this.getMessageListenerInner() instanceof MessageListenerOrderly) {
-                    this.consumeOrderly = true;
+                    this.consumeOrderly = true;//顺序消息服务
                     this.consumeMessageService = new ConsumeMessageOrderlyService(this, (MessageListenerOrderly) this.getMessageListenerInner());
                 } else if (this.getMessageListenerInner() instanceof MessageListenerConcurrently) {
-                    this.consumeOrderly = false;
+                    this.consumeOrderly = false; //并发消息服务，start启动 清理过期消息
                     this.consumeMessageService = new ConsumeMessageConcurrentlyService(this, (MessageListenerConcurrently) this.getMessageListenerInner());
                 }
                 this.consumeMessageService.start();
@@ -877,7 +879,7 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
     private void copySubscription() throws MQClientException {
         try {
             Map<String, String> sub = this.defaultMQPushConsumer.getSubscription();
-            if (sub != null) { // TODO 疑问：why？
+            if (sub != null) { // TODO 疑问：why？peng 这个逻辑确实不会走进来啊
                 for (final Map.Entry<String, String> entry : sub.entrySet()) {
                     final String topic = entry.getKey();
                     final String subString = entry.getValue();
@@ -894,10 +896,11 @@ public class DefaultMQPushConsumerImpl implements MQConsumerInner {
             switch (this.defaultMQPushConsumer.getMessageModel()) {
                 case BROADCASTING:
                     break;
-                case CLUSTERING:
+                case CLUSTERING: //集群模式，消息只被消费一次
                     final String retryTopic = MixAll.getRetryTopic(this.defaultMQPushConsumer.getConsumerGroup());
                     SubscriptionData subscriptionData = FilterAPI.buildSubscriptionData(this.defaultMQPushConsumer.getConsumerGroup(), //
                         retryTopic, SubscriptionData.SUB_ALL);
+                    //Subscription会存在两个映射，一个是topic-->SubscriptionData 一个是 retryTopic-->SubscriptionData
                     this.rebalanceImpl.getSubscriptionInner().put(retryTopic, subscriptionData);
                     break;
                 default:

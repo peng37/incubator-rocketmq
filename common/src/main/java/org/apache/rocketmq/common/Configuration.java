@@ -32,14 +32,16 @@ public class Configuration {
     private final Logger log;
 
     private List<Object> configObjectList = new ArrayList<Object>(4);
+    //数据存储地址配置
     private String storePath;
     private boolean storePathFromConfig = false;
     private Object storePathObject;
     private Field storePathField;
     private DataVersion dataVersion = new DataVersion();
+    //可重入读写锁
     private ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     /**
-     * All properties include configs in object and extend properties.
+     *所有的配置信息
      */
     private Properties allConfigs = new Properties();
 

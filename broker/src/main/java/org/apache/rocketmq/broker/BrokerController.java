@@ -70,13 +70,16 @@ public class BrokerController {
     private final NettyServerConfig nettyServerConfig;
     private final NettyClientConfig nettyClientConfig;
     private final MessageStoreConfig messageStoreConfig;
+
     private final ConsumerOffsetManager consumerOffsetManager;
     private final ConsumerManager consumerManager;
     private final ProducerManager producerManager;
+    //todo 干啥子的啊：start启动
     private final ClientHousekeepingService clientHousekeepingService;
+    //拉取消息的驱动
     private final PullMessageProcessor pullMessageProcessor;
     /**
-     * 拉取消息挂起维护线程服务
+     * 拉取消息挂起维护线程服务：start启动
      */
     private final PullRequestHoldService pullRequestHoldService;
     /**
@@ -88,30 +91,41 @@ public class BrokerController {
     private final ConsumerIdsChangeListener consumerIdsChangeListener;
 // todo 待读
     private final RebalanceLockManager rebalanceLockManager = new RebalanceLockManager();
+    //作为Client主要负责对外发起调用：start启动
     private final BrokerOuterAPI brokerOuterAPI;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
         "BrokerControllerScheduledThread"));
     private final SlaveSynchronize slaveSynchronize;
+    //线程池阻塞队列
     private final BlockingQueue<Runnable> sendThreadPoolQueue;
     private final BlockingQueue<Runnable> pullThreadPoolQueue;
     private final BlockingQueue<Runnable> clientManagerThreadPoolQueue;
     private final BlockingQueue<Runnable> consumerManagerThreadPoolQueue;
+    //消息过滤服务：start启动
     private final FilterServerManager filterServerManager;
+    //集群中Broker状态处理：start启动
     private final BrokerStatsManager brokerStatsManager;
+
     private final List<SendMessageHook> sendMessageHookList = new ArrayList<SendMessageHook>();
     private final List<ConsumeMessageHook> consumeMessageHookList = new ArrayList<ConsumeMessageHook>();
+    // peng 重要用于数数据存储控制类 ：start启动
     private MessageStore messageStore;
+    // todo 初始化两个RemotingServer是干嘛的 ：start启动
     private RemotingServer remotingServer;
     private RemotingServer fastRemotingServer;
+
     private TopicConfigManager topicConfigManager;
+    //执行器
     private ExecutorService sendMessageExecutor;
     private ExecutorService pullMessageExecutor;
     private ExecutorService adminBrokerExecutor;
     private ExecutorService clientManageExecutor;
     private ExecutorService consumerManageExecutor;
     private boolean updateMasterHAServerAddrPeriodically = false;
+    // todo
     private BrokerStats brokerStats;
     private InetSocketAddress storeHost;
+    // todo ：start启动
     private BrokerFastFailure brokerFastFailure;
     private Configuration configuration;
 
@@ -151,10 +165,7 @@ public class BrokerController {
         this.setStoreHost(new InetSocketAddress(this.getBrokerConfig().getBrokerIP1(), this.getNettyServerConfig().getListenPort()));
 
         this.brokerFastFailure = new BrokerFastFailure(this);
-        this.configuration = new Configuration(
-            log,
-            BrokerPathConfigHelper.getBrokerConfigPath(),
-            this.brokerConfig, this.nettyServerConfig, this.nettyClientConfig, this.messageStoreConfig
+        this.configuration = new Configuration(log, BrokerPathConfigHelper.getBrokerConfigPath(), this.brokerConfig, this.nettyServerConfig, this.nettyClientConfig, this.messageStoreConfig
         );
     }
 
@@ -196,10 +207,13 @@ public class BrokerController {
         result = result && this.messageStore.load();
 
         if (result) {
+
             this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.clientHousekeepingService);
+
             NettyServerConfig fastConfig = (NettyServerConfig) this.nettyServerConfig.clone();
             fastConfig.setListenPort(nettyServerConfig.getListenPort() - 2);
             this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);
+
             this.sendMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getSendMessageThreadPoolNums(),
                 this.brokerConfig.getSendMessageThreadPoolNums(),
@@ -600,7 +614,7 @@ public class BrokerController {
         if (this.fastRemotingServer != null) {
             this.fastRemotingServer.start();
         }
-
+        //client启动
         if (this.brokerOuterAPI != null) {
             this.brokerOuterAPI.start();
         }
@@ -618,7 +632,7 @@ public class BrokerController {
         }
 
         this.registerBrokerAll(true, false);
-
+        //namesrvAddr中注册broker: 30s一次
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override

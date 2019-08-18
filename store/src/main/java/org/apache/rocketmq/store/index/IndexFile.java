@@ -32,7 +32,7 @@ public class IndexFile {
     private static int hashSlotSize = 4;
     private static int indexSize = 20;
     private static int invalidIndex = 0;
-    private final int hashSlotNum;
+    private final int hashSlotNum; // hash²Û¸öÊý
     private final int indexNum;
     private final MappedFile mappedFile;
     private final FileChannel fileChannel;

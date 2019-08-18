@@ -46,7 +46,7 @@ public class RouteInfoManager {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * topic 与 队列数据数组 Map
-     * 一个 topic 可以对应 多个Broker
+     * 一个 topic 可以对应 多个Broker：一个topic存储在多个master上边
      */
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
     /**
@@ -58,10 +58,13 @@ public class RouteInfoManager {
     private final HashMap<String/* brokerName */, BrokerData> brokerAddrTable;
     /**
      * 集群 与 broker集合 Map
+     * key：集群名称
+     * value：集群下有多少个 master 集合
      */
     private final HashMap<String/* clusterName */, Set<String/* brokerName */>> clusterAddrTable;
     /**
      * broker地址 与 broker连接信息 Map
+     * 所有broker集合（master,slave）
      */
     private final HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable;
     /**
@@ -141,7 +144,7 @@ public class RouteInfoManager {
         RegisterBrokerResult result = new RegisterBrokerResult();
         try {
             try {
-                this.lock.writeLock().lockInterruptibly(); // TODO 疑问：为什么要两层try
+                this.lock.writeLock().lockInterruptibly(); // TODO 疑问：为什么要两层try ？？ 当然是怕释放锁的时候异常啦，那为啥不catch finally呢
                 // 更新集群信息
                 Set<String> brokerNames = this.clusterAddrTable.get(clusterName);
                 if (null == brokerNames) {
@@ -483,15 +486,18 @@ public class RouteInfoManager {
         while (it.hasNext()) {
             Entry<String, BrokerLiveInfo> next = it.next();
             long last = next.getValue().getLastUpdateTimestamp();
+            //2分钟没有上报就会移除broker
             if ((last + BROKER_CHANNEL_EXPIRED_TIME) < System.currentTimeMillis()) {
+                //关闭连接信息
                 RemotingUtil.closeChannel(next.getValue().getChannel());
+                //缓存中移除过期broker信息
                 it.remove();
                 log.warn("The broker channel expired, {} {}ms", next.getKey(), BROKER_CHANNEL_EXPIRED_TIME);
                 this.onChannelDestroy(next.getKey(), next.getValue().getChannel());
             }
         }
     }
-
+    //执行broker销毁方法
     public void onChannelDestroy(String remoteAddr, Channel channel) {
         String brokerAddrFound = null;
         if (channel != null) {

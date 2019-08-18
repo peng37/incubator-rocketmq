@@ -47,13 +47,14 @@ public class NamesrvStartup {
     }
 
     public static NamesrvController main0(String[] args) {
+        //设置系统变量：remoting version
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
         if (null == System.getProperty(NettySystemConfig.COM_ROCKETMQ_REMOTING_SOCKET_SNDBUF_SIZE)) {
             NettySystemConfig.socketSndbufSize = 4096; // 网络 socket 发送缓存区大小， 默认 64k。
 
         }
-
+        //socket.rcvbuf
         if (null == System.getProperty(NettySystemConfig.COM_ROCKETMQ_REMOTING_SOCKET_RCVBUF_SIZE)) {
             NettySystemConfig.socketRcvbufSize = 4096;
         }
@@ -74,11 +75,13 @@ public class NamesrvStartup {
             final NettyServerConfig nettyServerConfig = new NettyServerConfig();
             nettyServerConfig.setListenPort(9876); // namesrv启动监听端口号
             if (commandLine.hasOption('c')) {
+                //读取配置的读取配置文件的地址
                 String file = commandLine.getOptionValue('c');
                 if (file != null) {
                     InputStream in = new BufferedInputStream(new FileInputStream(file));
                     properties = new Properties();
                     properties.load(in);
+                    //properties2Object 将properties含有的namesrvConfig，nettyServerConfig需要的配置进行转换
                     MixAll.properties2Object(properties, namesrvConfig);
                     MixAll.properties2Object(properties, nettyServerConfig);
 
@@ -112,12 +115,17 @@ public class NamesrvStartup {
 
             MixAll.printObjectProperties(log, namesrvConfig);
             MixAll.printObjectProperties(log, nettyServerConfig);
-
+            //peng NamesrvController启动
             final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
-            // remember all configs to prevent discard
+            // 经配置存储到Controller中
             controller.getConfiguration().registerConfig(properties);
-
+            //peng 舒适化controller
+                //(1)从本地加载kvConfig到Manager中
+                //(2)启动netty服务
+                //(3)封装服务调用执行线程池，并注册服务broker请求处理器DefaultRequestProcessor
+                //(4)启动定时任务1：10s钟清理一次
+                //todo (5)启动定时任务2：定时KV打印？？？？？
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();

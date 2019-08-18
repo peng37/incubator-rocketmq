@@ -106,6 +106,10 @@ import org.apache.rocketmq.store.SelectMappedBufferResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Broker的主要执行器
+ * NettyRemotingAbstract中的默认执行器
+ */
 public class AdminBrokerProcessor implements NettyRequestProcessor {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -117,6 +121,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         switch (request.getCode()) {
+            //topic的增删改查
             case RequestCode.UPDATE_AND_CREATE_TOPIC:
                 return this.updateAndCreateTopic(ctx, request);
             case RequestCode.DELETE_TOPIC_IN_BROKER:
@@ -125,6 +130,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 return this.getAllTopicConfig(ctx, request);
             case RequestCode.UPDATE_BROKER_CONFIG:
                 return this.updateBrokerConfig(ctx, request);
+
             case RequestCode.GET_BROKER_CONFIG:
                 return this.getBrokerConfig(ctx, request);
             case RequestCode.SEARCH_OFFSET_BY_TIMESTAMP:

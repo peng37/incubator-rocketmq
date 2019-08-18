@@ -30,6 +30,9 @@ import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 订阅组信息
+ */
 public class SubscriptionGroupManager extends ConfigManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
 
@@ -47,6 +50,9 @@ public class SubscriptionGroupManager extends ConfigManager {
         this.init();
     }
 
+    /**
+     * 初始化一大堆默认的订阅组 todo 各自的作用待续
+     */
     private void init() {
         {
             SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();

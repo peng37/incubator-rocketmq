@@ -21,7 +21,15 @@
 package org.apache.rocketmq.common.protocol.route;
 
 /**
- * 队列数据
+ * 队列数据:一个QueueData代表一个topic存储的一个master配置
+ * 一个topic可以存储多个broker，一个broker可以为这个to设置多个读写队列
+ *  topic:存储在两个master上面，
+ *      broker1
+ *          writeQueue:5
+ *          readQueue:5
+ *      broker2
+ *          writeQueue:5
+ *          readQueue:5
  */
 public class QueueData implements Comparable<QueueData> {
     /**
@@ -40,6 +48,9 @@ public class QueueData implements Comparable<QueueData> {
      * 读写权限
      */
     private int perm;
+    /**
+     *  todo Topic 的Syn flag啥作用啊
+     */
     private int topicSynFlag;
 
     public int getReadQueueNums() {

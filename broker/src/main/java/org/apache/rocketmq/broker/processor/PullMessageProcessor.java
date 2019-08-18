@@ -59,6 +59,8 @@ import java.util.List;
 
 /**
  * 拉取消息处理器
+ * PULL_MESSAGE
+ * VIEW_MESSAGE_BY_ID
  */
 public class PullMessageProcessor implements NettyRequestProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
