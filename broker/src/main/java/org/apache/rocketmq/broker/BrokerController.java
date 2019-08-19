@@ -72,7 +72,9 @@ public class BrokerController {
     private final MessageStoreConfig messageStoreConfig;
 
     private final ConsumerOffsetManager consumerOffsetManager;
+    //消费者管理器
     private final ConsumerManager consumerManager;
+    //生产者管理器
     private final ProducerManager producerManager;
     //todo 干啥子的啊：start启动
     private final ClientHousekeepingService clientHousekeepingService;
@@ -203,7 +205,7 @@ public class BrokerController {
                 e.printStackTrace();
             }
         }
-
+        //peng messageStore启动，加载磁盘中的commitlog，consumequeue，checkpoint，index数据
         result = result && this.messageStore.load();
 
         if (result) {
@@ -654,6 +656,11 @@ public class BrokerController {
         }
     }
 
+    /**
+     * 向namesrv中进行新增topic注册通知
+     * @param checkOrderConfig
+     * @param oneway
+     */
     public synchronized void registerBrokerAll(final boolean checkOrderConfig, boolean oneway) {
         TopicConfigSerializeWrapper topicConfigWrapper = this.getTopicConfigManager().buildTopicConfigSerializeWrapper();
 

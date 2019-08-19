@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 客户端注册&注销
+ * (1)生产则和消费者客户端在启动的时候调用
  * HEART_BEAT
  * UNREGISTER_CLIENT
  */
@@ -54,8 +56,12 @@ public class ClientManageProcessor implements NettyRequestProcessor {
     public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
         throws RemotingCommandException {
         switch (request.getCode()) {
+            //peng 开启客户端：生产者和消费者客户端注册：这个方法消费者和生产者都可以调用的哦
+                //（1）更新消费者，消费组、订阅topic、以及client与broker的连接通道
+                //（2）注册生产者，一个生产组对应多个生产者，每一个生产者都和broker独立连接
             case RequestCode.HEART_BEAT:
                 return this.heartBeat(ctx, request);
+            //peng 注销客户端：生产者和消费者客户端注销：就是从那些缓存中移除
             case RequestCode.UNREGISTER_CLIENT:
                 return this.unregisterClient(ctx, request);
             default:
@@ -78,8 +84,9 @@ public class ClientManageProcessor implements NettyRequestProcessor {
             request.getLanguage(),
             request.getVersion()
         );
-
+        //遍历得到消费者集合【请求中携带很多消费组】
         for (ConsumerData data : heartbeatData.getConsumerDataSet()) {
+            //订阅组的配置信息
             SubscriptionGroupConfig subscriptionGroupConfig =
                 this.brokerController.getSubscriptionGroupManager().findSubscriptionGroupConfig(
                     data.getGroupName());
@@ -91,12 +98,13 @@ public class ClientManageProcessor implements NettyRequestProcessor {
                     topicSysFlag = TopicSysFlag.buildSysFlag(false, true);
                 }
                 String newTopic = MixAll.getRetryTopic(data.getGroupName());
+                //todo 作用 ？？：为消费者创建一个内部的topic
                 this.brokerController.getTopicConfigManager().createTopicInSendMessageBackMethod(
                     newTopic,
                     subscriptionGroupConfig.getRetryQueueNums(),
                     PermName.PERM_WRITE | PermName.PERM_READ, topicSysFlag);
             }
-
+            //注册consumer
             boolean changed = this.brokerController.getConsumerManager().registerConsumer(
                 data.getGroupName(),
                 clientChannelInfo,
@@ -114,7 +122,7 @@ public class ClientManageProcessor implements NettyRequestProcessor {
                 );
             }
         }
-
+        //注册producer
         for (ProducerData data : heartbeatData.getProducerDataSet()) {
             this.brokerController.getProducerManager().registerProducer(data.getGroupName(),
                 clientChannelInfo);

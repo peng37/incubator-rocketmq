@@ -48,7 +48,7 @@ import java.net.SocketAddress;
 import java.util.List;
 
 /**
- *
+ *  接收生产者发送的消息进行存储
  * SEND_MESSAGE
  * SEND_MESSAGE_V2：
  * CONSUMER_SEND_MSG_BACK：消费者发送消息回调

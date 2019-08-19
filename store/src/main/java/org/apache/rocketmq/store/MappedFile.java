@@ -105,7 +105,7 @@ public class MappedFile extends ReferenceResource {
      */
     private File file;
     /**
-     * 文件映射Buffer
+     * 文件映射Buffer 缓存
      */
     private MappedByteBuffer mappedByteBuffer;
     /**

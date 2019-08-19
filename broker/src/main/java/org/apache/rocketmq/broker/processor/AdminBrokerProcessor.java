@@ -121,18 +121,32 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         switch (request.getCode()) {
-            //topic的增删改查
+            /***********************topic相关***************************/
+            //peng topic的增删改查
+            //topic更新创建：
+               //（1）更新&创建config中的topic
+               //（2）向namesrv中进行新增topic注册通知
             case RequestCode.UPDATE_AND_CREATE_TOPIC:
                 return this.updateAndCreateTopic(ctx, request);
+            //topic删除：
+                //（1）移除config中的topic配置
+                //（2）停止文件映射mappedFileQueue
+                //（3）commitLog停止同步
             case RequestCode.DELETE_TOPIC_IN_BROKER:
                 return this.deleteTopic(ctx, request);
+            //topic获取
             case RequestCode.GET_ALL_TOPIC_CONFIG:
                 return this.getAllTopicConfig(ctx, request);
+            /***********************broker相关***************************/
+            //更新broker配置：请求中携带的key,value值
+                //（1）更新configuration中的allConfigs配置
+                //（2）如果更新的数据中含有brokerPermission需要向namesrv中进行通知
             case RequestCode.UPDATE_BROKER_CONFIG:
                 return this.updateBrokerConfig(ctx, request);
-
             case RequestCode.GET_BROKER_CONFIG:
                 return this.getBrokerConfig(ctx, request);
+            /***********************store相关***************************/
+             //todo 通过时间戳查找offset
             case RequestCode.SEARCH_OFFSET_BY_TIMESTAMP:
                 return this.searchOffsetByTimestamp(ctx, request);
             case RequestCode.GET_MAX_OFFSET:
@@ -143,16 +157,20 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 return this.getEarliestMsgStoretime(ctx, request);
             case RequestCode.GET_BROKER_RUNTIME_INFO:
                 return this.getBrokerRuntimeInfo(ctx, request);
+
+            /***********************Rebalance相关***************************/
             case RequestCode.LOCK_BATCH_MQ:
                 return this.lockBatchMQ(ctx, request);
             case RequestCode.UNLOCK_BATCH_MQ:
                 return this.unlockBatchMQ(ctx, request);
             case RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP:
+            /***********************订阅相关***************************/
                 return this.updateAndCreateSubscriptionGroup(ctx, request);
             case RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG:
                 return this.getAllSubscriptionGroup(ctx, request);
             case RequestCode.DELETE_SUBSCRIPTIONGROUP:
                 return this.deleteSubscriptionGroup(ctx, request);
+            /***********************生产者消费者相关***************************/
             case RequestCode.GET_TOPIC_STATS_INFO:
                 return this.getTopicStatsInfo(ctx, request);
             case RequestCode.GET_CONSUMER_CONNECTION_LIST:
@@ -163,6 +181,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 return this.getConsumeStats(ctx, request);
             case RequestCode.GET_ALL_CONSUMER_OFFSET:
                 return this.getAllConsumerOffset(ctx, request);
+            /***********************延迟队列相关***************************/
             case RequestCode.GET_ALL_DELAY_OFFSET:
                 return this.getAllDelayOffset(ctx, request);
             case RequestCode.INVOKE_BROKER_TO_RESET_OFFSET:
@@ -210,7 +229,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         final CreateTopicRequestHeader requestHeader =
             (CreateTopicRequestHeader) request.decodeCommandCustomHeader(CreateTopicRequestHeader.class);
         log.info("updateAndCreateTopic called by {}", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-
+        //peng 系统保留topic不允许设置 DefaultCluster
         if (requestHeader.getTopic().equals(this.brokerController.getBrokerConfig().getBrokerClusterName())) {
             String errorMsg = "the topic[" + requestHeader.getTopic() + "] is conflict with system reserved words.";
             log.warn(errorMsg);
@@ -218,7 +237,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
             response.setRemark(errorMsg);
             return response;
         }
-
+        //直接返回不等topic完成创建
         try {
             response.setCode(ResponseCode.SUCCESS);
             response.setOpaque(request.getOpaque());
@@ -234,8 +253,9 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         topicConfig.setTopicFilterType(requestHeader.getTopicFilterTypeEnum());
         topicConfig.setPerm(requestHeader.getPerm());
         topicConfig.setTopicSysFlag(requestHeader.getTopicSysFlag() == null ? 0 : requestHeader.getTopicSysFlag());
-
+        //更新本机topic配置，如果存在就更新，不存在就创建【就是向map中存储了下】，然后持久化
         this.brokerController.getTopicConfigManager().updateTopicConfig(topicConfig);
+        //向namesrv中进行新增topic注册通知
         this.brokerController.registerBrokerAll(false, true);
         return null;
     }
@@ -248,6 +268,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
         log.info("deleteTopic called by {}", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
         this.brokerController.getTopicConfigManager().deleteTopicConfig(requestHeader.getTopic());
+        //TopicConfigTable中的topic都是有效的了，执行cleanUnusedTopic会遍历topic队列映射，移除TopicConfigTable没有的topic信息
         this.brokerController.getMessageStore()
             .cleanUnusedTopic(this.brokerController.getTopicConfigManager().getTopicConfigTable().keySet());
 

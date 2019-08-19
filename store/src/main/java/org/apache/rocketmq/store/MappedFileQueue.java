@@ -38,7 +38,8 @@ public class MappedFileQueue {
      */
     private static final int DELETE_FILES_BATCH_MAX = 10;
     /**
-     * 目录
+     * 存储消息的目录
+     * 目录 /store/commitlog
      */
     private final String storePath;
     /**
@@ -46,7 +47,10 @@ public class MappedFileQueue {
      */
     private final int mappedFileSize;
     /**
-     * 映射文件数组
+     * MQ中store/commitlog下的所有文件都有一个MappedFile与之对应，并创建一个长连接通道，只有程序关闭才会关闭改通道
+     * 映射文件数组一个MappedFile对应一个一个文件
+     * 比如：/store/commitlog/00000000000000000000
+     *
      */
     private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<>();
     /**
@@ -177,6 +181,8 @@ public class MappedFileQueue {
                 }
 
                 try {
+                    //peng
+                    //创建程序与硬盘文件的交互通道MappedFile
                     MappedFile mappedFile = new MappedFile(file.getPath(), mappedFileSize);
 
                     mappedFile.setWrotePosition(this.mappedFileSize);

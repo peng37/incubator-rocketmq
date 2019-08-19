@@ -36,6 +36,9 @@ public class MessageExt extends Message {
      * 队列offset
      */
     private long queueOffset;
+    /**
+     * todo 改消息是否可投递？？
+     */
     private int sysFlag;
     /**
      * 生成时间

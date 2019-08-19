@@ -35,9 +35,11 @@ import org.slf4j.LoggerFactory;
  */
 public class SubscriptionGroupManager extends ConfigManager {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
-
-    private final ConcurrentHashMap<String, SubscriptionGroupConfig> subscriptionGroupTable =
-        new ConcurrentHashMap<String, SubscriptionGroupConfig>(1024);
+    /**
+     * key:groupName
+     * value: 消费分组下面的订阅配置：主要还是控制这改消费分组是否可以进行消费相关总控制
+     */
+    private final ConcurrentHashMap<String, SubscriptionGroupConfig> subscriptionGroupTable = new ConcurrentHashMap<String, SubscriptionGroupConfig>(1024);
     private final DataVersion dataVersion = new DataVersion();
     private transient BrokerController brokerController;
 

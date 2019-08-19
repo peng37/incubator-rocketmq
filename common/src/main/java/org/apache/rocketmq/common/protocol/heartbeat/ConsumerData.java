@@ -25,11 +25,13 @@ import java.util.Set;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 
 public class ConsumerData {
+    //消费者启动consumer传入的消费组，一般和应用有感关
     private String groupName;
     private ConsumeType consumeType;
     private MessageModel messageModel;
     private ConsumeFromWhere consumeFromWhere;
     private Set<SubscriptionData> subscriptionDataSet = new HashSet<SubscriptionData>();
+    //todo
     private boolean unitMode;
 
     public String getGroupName() {

@@ -118,6 +118,7 @@ public abstract class NettyRemotingAbstract {
                         }
                         //非一次发送的，调用端在等着响应呢，所有需要给请求予响应
                         if (!cmd.isOnewayRPC()) {
+                            // peng response等于null的时候一般都是被挂起了 或是处理器内部直接做了Flush操作
                             if (response != null) {
                                 response.setOpaque(opaque);
                                 response.markResponseType();

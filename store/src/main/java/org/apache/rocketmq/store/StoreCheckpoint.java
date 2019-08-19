@@ -29,6 +29,12 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 
 // TODO 待读
+
+/**
+ * 在进行消息写入commitlog，物理偏移量/消息大小写入 consumequeue、创建 Index 索引这三个操作之后都要分别更新
+ * physicMsgTimestamp、 logicsMsgTimestamp、indexMsgTimestamp 字段的内容；
+ 在从异常中恢复 commitlog 内存数据时要用得该文件的三个字段的时间戳
+ */
 public class StoreCheckpoint {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private final RandomAccessFile randomAccessFile;

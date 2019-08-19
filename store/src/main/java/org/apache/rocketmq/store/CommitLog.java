@@ -63,6 +63,7 @@ public class CommitLog {
     private final static int BLANK_MAGIC_CODE = 0xBBCCDDEE ^ 1880681586 + 8;
     /**
      * 映射文件队列
+     * peng 这里面存储了所有store/commitlog下面的文件映射连接
      */
     private final MappedFileQueue mappedFileQueue;
     /**

@@ -23,10 +23,14 @@ public class TopicConfig {
     public static int defaultReadQueueNums = 16;
     public static int defaultWriteQueueNums = 16;
     private String topicName;
+    //读写队列数
     private int readQueueNums = defaultReadQueueNums;
     private int writeQueueNums = defaultWriteQueueNums;
+    // todo 具体作用？？
     private int perm = PermName.PERM_READ | PermName.PERM_WRITE;
+    // todo 具体作用？？
     private TopicFilterType topicFilterType = TopicFilterType.SINGLE_TAG;
+    // todo 具体作用？？
     private int topicSysFlag = 0;
     private boolean order = false;
 

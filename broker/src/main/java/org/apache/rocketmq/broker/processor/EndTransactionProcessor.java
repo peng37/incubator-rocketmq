@@ -37,6 +37,13 @@ import org.apache.rocketmq.store.PutMessageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 消息事务操作处理：peng 采用二阶段提交处理模式
+ *（1）生产者将消息发送给MQ进行存储：但是不可投递SendMessageProcessor负责这部分处理
+ * （2）生产则处理完事务后，进行提交或回滚操作。
+ *      提交：将消息标记为可投递,并进行重新存储，订阅者可接受到该消息
+ *      回滚：删除消息
+ */
 public class EndTransactionProcessor implements NettyRequestProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoggerName.TRANSACTION_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -58,7 +65,7 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
         final EndTransactionRequestHeader requestHeader = (EndTransactionRequestHeader) request.decodeCommandCustomHeader(EndTransactionRequestHeader.class);
 
-        // 打印日志（只处理 COMMIT / ROLLBACK）
+        // 只打印日志
         if (requestHeader.getFromTransactionCheck()) {
             switch (requestHeader.getCommitOrRollback()) {
                 case MessageSysFlag.TRANSACTION_NOT_TYPE: {
@@ -92,6 +99,7 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
                     return null;
             }
         } else {
+            //打印日志 只处理 COMMIT / ROLLBACK）
             switch (requestHeader.getCommitOrRollback()) {
                 case MessageSysFlag.TRANSACTION_NOT_TYPE: {
                     LOGGER.warn("the producer[{}] end transaction in sending message,  and it's pending status."
@@ -118,8 +126,7 @@ public class EndTransactionProcessor implements NettyRequestProcessor {
                     return null;
             }
         }
-
-        // 查询提交的消息
+        // 查询一阶段 提交的消息
         final MessageExt msgExt = this.brokerController.getMessageStore().lookMessageByOffset(requestHeader.getCommitLogOffset());
         if (msgExt != null) {
             // 校验 producerGroup

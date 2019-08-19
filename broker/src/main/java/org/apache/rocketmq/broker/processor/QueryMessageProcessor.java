@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 根据时间戳获取消息查询：拉取就需要查询消息
+ *
  * QUERY_MESSAGE
  */
 public class QueryMessageProcessor implements NettyRequestProcessor {
@@ -56,6 +58,7 @@ public class QueryMessageProcessor implements NettyRequestProcessor {
         switch (request.getCode()) {
             case RequestCode.QUERY_MESSAGE:
                 return this.queryMessage(ctx, request);
+            //todo 通过offset查询消息 而且是随便找一个file进行数据读取 ？？干嘛的
             case RequestCode.VIEW_MESSAGE_BY_ID:
                 return this.viewMessageById(ctx, request);
             default:

@@ -22,13 +22,14 @@ import org.apache.rocketmq.store.ConsumeQueue;
 import java.io.File;
 
 public class MessageStoreConfig {
-    //The root directory in which the log data is kept
+    //store 根目录 存储路径
     @ImportantField
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "store";
 
     /**
      * The directory in which the commit_log is kept
      * commitlog 目录
+     * peng 具体存储数据的路径
      */
     @ImportantField
     @SuppressWarnings("SpellCheckingInspection")
@@ -75,7 +76,7 @@ public class MessageStoreConfig {
     private boolean flushCommitLogTimed = false;
     // ConsumeQueue flush interval
     private int flushIntervalConsumeQueue = 1000;
-    // Resource reclaim interval
+    // Resource reclaim interval 数据清理时间间隔配置
     private int cleanResourceInterval = 10000;
     // CommitLog removal interval
     private int deleteCommitLogFilesInterval = 100;
@@ -88,6 +89,7 @@ public class MessageStoreConfig {
     private String deleteWhen = "04";
     private int diskMaxUsedSpaceRatio = 75;
     // The number of hours to keep a log file before deleting it (in hours)
+    //MQ磁盘文件保留时间
     @ImportantField
     private int fileReservedTime = 72;
     // Flow control for ConsumeQueue

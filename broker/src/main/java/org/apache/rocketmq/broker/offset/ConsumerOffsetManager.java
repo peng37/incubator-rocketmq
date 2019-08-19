@@ -38,6 +38,10 @@ public class ConsumerOffsetManager extends ConfigManager {
 
     /**
      * 消费进度集合
+     * key:topic@group 说明在集群模式下，同一个消费组消息消费不会重复。不同消费组对消息的消费互不影响
+     * value:
+     *  key：queueID消费队列ID
+     *  value：消费进度offset值
      */
     private ConcurrentHashMap<String/* topic@group */, ConcurrentHashMap<Integer, Long>> offsetTable = new ConcurrentHashMap<>(512);
 

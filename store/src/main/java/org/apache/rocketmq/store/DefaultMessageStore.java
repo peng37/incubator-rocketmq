@@ -59,8 +59,9 @@ public class DefaultMessageStore implements MessageStore {
      * MessageStore配置
      */
     private final MessageStoreConfig messageStoreConfig;
+    /***CommitLog和consumeQueueTable有同样的作用实现和磁盘的通道交互*/
     /**
-     * CommitLog
+     * peng CommitLog
      */
     private final CommitLog commitLog;
     /**
@@ -71,13 +72,13 @@ public class DefaultMessageStore implements MessageStore {
      * flush 消费队列线程服务
      */
     private final FlushConsumeQueueService flushConsumeQueueService;
-
+    // peng 定时任务执行：清理log
     private final CleanCommitLogService cleanCommitLogService;
-
+    // peng 定时任务执行：清理消息队列
     private final CleanConsumeQueueService cleanConsumeQueueService;
 
     private final IndexService indexService;
-
+    //peng MappedFile统一创建管理allocate分配
     private final AllocateMappedFileService allocateMappedFileService;
 
     /**
@@ -110,6 +111,14 @@ public class DefaultMessageStore implements MessageStore {
 
     private AtomicLong printTimes = new AtomicLong(0);
 
+    /**
+     *
+     * @param messageStoreConfig 配置
+     * @param brokerStatsManager  broker状态控制
+     * @param messageArrivingListener 消息监听器
+     * @param brokerConfig brokerConfig配置
+     * @throws IOException
+     */
     public DefaultMessageStore(final MessageStoreConfig messageStoreConfig, final BrokerStatsManager brokerStatsManager,
         final MessageArrivingListener messageArrivingListener, final BrokerConfig brokerConfig) throws IOException {
 
@@ -119,6 +128,7 @@ public class DefaultMessageStore implements MessageStore {
         this.messageStoreConfig = messageStoreConfig;
 
         this.brokerStatsManager = brokerStatsManager;
+
         this.allocateMappedFileService = new AllocateMappedFileService(this);
         this.commitLog = new CommitLog(this);
         this.consumeQueueTable = new ConcurrentHashMap<>(32);
@@ -157,6 +167,7 @@ public class DefaultMessageStore implements MessageStore {
 
     /**
      * @throws IOException
+     * store磁盘数据初始化
      */
     public boolean load() {
         boolean result = true;
@@ -164,12 +175,12 @@ public class DefaultMessageStore implements MessageStore {
         try {
             boolean lastExitOK = !this.isTempFileExist();
             log.info("last shutdown {}", lastExitOK ? "normally" : "abnormally");
-
+            //peng 延迟消息服务加载
             if (null != scheduleMessageService) {
                 result = result && this.scheduleMessageService.load();
             }
 
-            // load Commit Log
+            // load Commit Log 程序启动的时候会检测有没有已经存在的数据文件需要加载通道
             result = result && this.commitLog.load();
 
             // load Consume Queue
@@ -849,6 +860,7 @@ public class DefaultMessageStore implements MessageStore {
 
             if (!topics.contains(topic) && !topic.equals(ScheduleMessageService.SCHEDULE_TOPIC)) {
                 ConcurrentHashMap<Integer, ConsumeQueue> queueTable = next.getValue();
+                //peng 重要，执行topic映射销毁
                 for (ConsumeQueue cq : queueTable.values()) {
                     cq.destroy();
                     log.info("cleanUnusedTopic: {} {} ConsumeQueue cleaned", //
@@ -1140,7 +1152,7 @@ public class DefaultMessageStore implements MessageStore {
         boolean result = file.createNewFile();
         log.info(fileName + (result ? " create OK" : " already exists"));
     }
-
+    //peng 启动定时任务
     private void addScheduleTask() {
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
